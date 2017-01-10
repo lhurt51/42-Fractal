@@ -56,8 +56,8 @@ void	mandelbrot(t_mlx *new, int max)
 	while (row < W_HEIGHT) {
 		col = 0;
     	while (col < W_WIDTH) {
-			man_depth(&i, (col - W_WIDTH / 2.0) * 4.0 / W_WIDTH,
-				(row - W_HEIGHT / 2.0) * 4.0 / W_WIDTH, max);
+			man_depth(&i, (col - W_WIDTH / 2.0) * 4.0 / W_WIDTH * new->scale + new->x_offset,
+				(row - W_HEIGHT / 2.0) * 4.0 / W_WIDTH * new->scale + new->y_offset, max);
 	        if (i < max)
 				pixel_to_img(new, col, row, red_to_blue[i]);
 	        else
@@ -68,12 +68,86 @@ void	mandelbrot(t_mlx *new, int max)
 	}
 }
 
+void	run_man(t_mlx *new)
+{
+	new->img = mlx_new_image(new->mlx, W_WIDTH, W_HEIGHT);
+	new->data = mlx_get_data_addr(new->img, &new->bits, &new->size_line, &new->endian);
+	mandelbrot(new, 64);
+	mlx_put_image_to_window(new->mlx, new->win, new->img, 0, 0);
+}
+
+void	zoom(t_mlx *new, int x, int y, int check)
+{
+	if (check > 0)
+	{
+		new->scale *= .92;
+		new->x_offset += (x - W_XORIGIN) / (W_XORIGIN / new->scale) / 2.5;
+		new->y_offset += (y - W_YORIGIN) / (W_YORIGIN / new->scale) / 2.5;
+	}
+	else
+	{
+		new->scale /= .92;
+		new->x_offset -= (x - W_XORIGIN) / (W_XORIGIN / new->scale) / 2.5;
+		new->y_offset -= (y - W_YORIGIN) / (W_YORIGIN / new->scale) / 2.5;
+	}
+	mlx_destroy_image(new->mlx, new->img);
+	run_man(new);
+}
+
+int		my_mouse_func(int keycode, int x, int y, t_mlx *new)
+{
+	static int	check = 0;
+
+	check++;
+	if (new)
+	{
+		ft_putnbr(keycode);
+		ft_putchar('\n');
+	}
+	if (keycode == 5 && check == ZOOM_SPEED)
+	{
+		zoom(new, x, y, 1);
+		check = 0;
+	}
+	else if (keycode == 4 && check == ZOOM_SPEED)
+	{
+		zoom(new, x, y, -1);
+		check = 0;
+	}
+	return (0);
+}
+
+void 	move_xoff(t_mlx *new, double x)
+{
+	new->x_offset += x;
+	mlx_destroy_image(new->mlx, new->img);
+	run_man(new);
+}
+
+void 	move_yoff(t_mlx *new, double x)
+{
+	new->y_offset += x;
+	mlx_destroy_image(new->mlx, new->img);
+	run_man(new);
+}
+
 int		my_key_press(int keycode, t_mlx *new)
 {
 	if (keycode == 53)
 		exit(0);
+	else if (keycode == 123)
+		move_xoff(new, -0.1);
+	else if (keycode == 124)
+		move_xoff(new, 0.1);
+	else if (keycode == 126)
+		move_yoff(new, -0.1);
+	else if (keycode == 125)
+		move_yoff(new, 0.1);
 	else if (new)
+	{
 		ft_putnbr(keycode);
+		ft_putchar('\n');
+	}
 	return (0);
 }
 
@@ -82,9 +156,9 @@ void	run_win(t_mlx *new)
 	new->mlx = mlx_init();
 	new->win = mlx_new_window(new->mlx, W_WIDTH, W_HEIGHT, "42");
 	new->img = mlx_new_image(new->mlx, W_WIDTH, W_HEIGHT);
-	new->data = mlx_get_data_addr(new->img, &new->bits, &new->size_line, &new->endian);
-	mandelbrot(new, 100);
-	mlx_put_image_to_window(new->mlx, new->win, new->img, 0, 0);
+	new->scale = 1;
+	run_man(new);
+	mlx_mouse_hook(new->win, my_mouse_func, new);
 	mlx_hook(new->win, 2, 0, my_key_press, new);
 	mlx_loop(new->mlx);
 }
