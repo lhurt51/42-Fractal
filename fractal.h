@@ -20,11 +20,11 @@
 # include <mlx.h>
 # include "libft/libft.h"
 
-# define FOCAL_DISTANCE 200
 # define W_WIDTH 1920
 # define W_HEIGHT 1080
 # define W_XORIGIN W_WIDTH / 2
 # define W_YORIGIN W_HEIGHT / 2
+# define ZOOM_SPEED 2
 
 typedef struct		s_mlx
 {
@@ -35,6 +35,9 @@ typedef struct		s_mlx
 	int				bits;
 	int				size_line;
 	int				endian;
+	double			scale;
+	double			x_offset;
+	double			y_offset;
 }					t_mlx;
 
 static int dawn[64] = {
