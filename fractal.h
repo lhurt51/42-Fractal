@@ -38,6 +38,7 @@ typedef struct		s_mlx
 	double			scale;
 	double			x_offset;
 	double			y_offset;
+	int				depth;
 }					t_mlx;
 
 static int dawn[64] = {
