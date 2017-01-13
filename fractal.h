@@ -18,16 +18,30 @@
 # include <fcntl.h>
 # include <math.h>
 # include <mlx.h>
+# include <stdio.h>
 # include "libft/libft.h"
 
 # define W_WIDTH 1920
 # define W_HEIGHT 1080
 # define W_XORIGIN W_WIDTH / 2
 # define W_YORIGIN W_HEIGHT / 2
-# define ZOOM_SPEED 2
+# define new_x(i) ((i)*4.0/W_WIDTH - 2)
+# define new_y(j) ((j)*4.0/W_HEIGHT - 2)
+
+typedef struct		s_env
+{
+	char			*check;
+	double			scale;
+	double			x_offset;
+	double			y_offset;
+	int				depth;
+	int				x_lock;
+	int				y_lock;
+}					t_env;
 
 typedef struct		s_mlx
 {
+	t_env			env;
 	void			*mlx;
 	void			*win;
 	void			*img;
@@ -35,10 +49,6 @@ typedef struct		s_mlx
 	int				bits;
 	int				size_line;
 	int				endian;
-	double			scale;
-	double			x_offset;
-	double			y_offset;
-	int				depth;
 }					t_mlx;
 
 static int dawn[64] = {
