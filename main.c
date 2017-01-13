@@ -56,10 +56,10 @@ void	mandelbrot(t_mlx *new, int max)
 	while (row < W_HEIGHT) {
 		col = 0;
     	while (col < W_WIDTH) {
-			man_depth(&i, (col - W_WIDTH / 2.0) * 4.0 / W_WIDTH * new->scale + new->x_offset,
-				(row - W_HEIGHT / 2.0) * 4.0 / W_WIDTH * new->scale + new->y_offset, max);
+			man_depth(&i, (col - W_WIDTH / 2.0) * 4.0 / W_WIDTH * new->env.scale + new->env.x_offset,
+				(row - W_HEIGHT / 2.0) * 4.0 / W_WIDTH * new->env.scale + new->env.y_offset, max);
 	        if (i < max)
-				pixel_to_img(new, col, row, red_to_blue[i % 64]);
+				pixel_to_img(new, col, row, rainbow[i % 64]);
 	        else
 				pixel_to_img(new, col, row, 0x000000);
 			col++;
@@ -74,13 +74,12 @@ int		julia_depth(t_mlx *new, int x, int y, int col, int row)
 	double	cRe, cIm;
 	int		i;
 
-	x += y;
-	cRe = -0.7;
-	cIm = 0.27015;
-	newRe = (col - W_WIDTH / 2.0) * 4.0 / W_WIDTH * new->scale + new->x_offset;
-	newIm = (row - W_HEIGHT / 2.0) * 4.0 / W_WIDTH * new->scale + new->y_offset;
+	cRe = new_x(x);
+	cIm = new_y(y);
+	newRe = (col - W_WIDTH / 2.0) * 4.0 / W_WIDTH * new->env.scale + new->env.x_offset;
+	newIm = (row - W_HEIGHT / 2.0) * 4.0 / W_WIDTH * new->env.scale + new->env.y_offset;
 	i = 0;
-	while(i < new->depth)
+	while(i < new->env.depth)
 	{
 		oldRe = newRe;
 		oldIm = newIm;
@@ -106,8 +105,8 @@ void	julia_set(t_mlx *new, int x, int y)
 		while (col < W_WIDTH)
 		{
 			i = julia_depth(new, x, y, col, row);
-			if (i < new->depth)
-				  pixel_to_img(new, col, row, red_to_blue[i % 64]);
+			if (i < new->env.depth)
+				  pixel_to_img(new, col, row, rainbow[i % 64]);
 			else
 				  pixel_to_img(new, col, row, 0x000000);
 			col++;
@@ -118,53 +117,63 @@ void	julia_set(t_mlx *new, int x, int y)
 
 void	run_man(t_mlx *new)
 {
+	mlx_destroy_image(new->mlx, new->img);
 	new->img = mlx_new_image(new->mlx, W_WIDTH, W_HEIGHT);
 	new->data = mlx_get_data_addr(new->img, &new->bits, &new->size_line, &new->endian);
-	mandelbrot(new, new->depth);
+	mandelbrot(new, new->env.depth);
 	mlx_put_image_to_window(new->mlx, new->win, new->img, 0, 0);
 }
 
 void	run_jul(t_mlx *new, int x, int y)
 {
+	mlx_destroy_image(new->mlx, new->img);
 	new->img = mlx_new_image(new->mlx, W_WIDTH, W_HEIGHT);
 	new->data = mlx_get_data_addr(new->img, &new->bits, &new->size_line, &new->endian);
 	julia_set(new, x, y);
 	mlx_put_image_to_window(new->mlx, new->win, new->img, 0, 0);
 }
 
+void	check_param(t_mlx *new)
+{
+	if (!strncmp(new->env.check, "man", 3))
+		run_man(new);
+	else if (!strncmp(new->env.check, "jul", 3))
+		run_jul(new, new->env.x_lock, new->env.y_lock);
+	// else if (!strncmp(str, "apo", 3))
+	//
+	else
+		error();
+}
+
 void	zoom(t_mlx *new, int x, int y, int check)
 {
 	if (check > 0)
 	{
-		new->scale *= .92;
-		new->x_offset += (x - W_XORIGIN) / (W_XORIGIN / new->scale) / 2.5;
-		new->y_offset += (y - W_YORIGIN) / (W_YORIGIN / new->scale) / 2.5;
+		new->env.scale *= .92;
+		new->env.x_offset += (x - W_XORIGIN) / (W_XORIGIN / new->env.scale) / 2.5;
+		new->env.y_offset += (y - W_YORIGIN) / (W_YORIGIN / new->env.scale) / 2.5;
 	}
 	else
 	{
-		new->scale /= .92;
-		new->x_offset -= (x - W_XORIGIN) / (W_XORIGIN / new->scale) / 2.5;
-		new->y_offset -= (y - W_YORIGIN) / (W_YORIGIN / new->scale) / 2.5;
+		new->env.scale /= .92;
+		new->env.x_offset -= (x - W_XORIGIN) / (W_XORIGIN / new->env.scale) / 2.5;
+		new->env.y_offset -= (y - W_YORIGIN) / (W_YORIGIN / new->env.scale) / 2.5;
 	}
-	mlx_destroy_image(new->mlx, new->img);
-	run_jul(new, 1, 0);
+	check_param(new);
 }
 
 int		my_mouse_func(int keycode, int x, int y, t_mlx *new)
 {
-	static int	check = 0;
-
-	check++;
-	if (keycode == 5 && check == ZOOM_SPEED)
+	if (keycode == 1)
 	{
+		new->env.x_lock = x;
+		new->env.y_lock = y;
+		check_param(new);
+	}
+	else if (keycode == 5)
 		zoom(new, x, y, 1);
-		check = 0;
-	}
-	else if (keycode == 4 && check == ZOOM_SPEED)
-	{
+	else if (keycode == 4)
 		zoom(new, x, y, -1);
-		check = 0;
-	}
 	else
 	{
 		ft_putnbr(keycode);
@@ -175,24 +184,21 @@ int		my_mouse_func(int keycode, int x, int y, t_mlx *new)
 
 void 	move_xoff(t_mlx *new, double x)
 {
-	new->x_offset += x;
-	mlx_destroy_image(new->mlx, new->img);
-	run_jul(new, 1, 0);
+	new->env.x_offset += x;
+	check_param(new);
 }
 
 void 	move_yoff(t_mlx *new, double x)
 {
-	new->y_offset += x;
-	mlx_destroy_image(new->mlx, new->img);
-	run_jul(new, 1, 0);
+	new->env.y_offset += x;
+	check_param(new);
 }
 
 void	change_depth(t_mlx *new, int x)
 {
-	if (new->depth + x > 0)
-		new->depth += x;
-	mlx_destroy_image(new->mlx, new->img);
-	run_jul(new, 1, 0);
+	if (new->env.depth + x > 0)
+		new->env.depth += x;
+	check_param(new);
 }
 
 int		my_key_press(int keycode, t_mlx *new)
@@ -200,17 +206,17 @@ int		my_key_press(int keycode, t_mlx *new)
 	if (keycode == 53)
 		exit(0);
 	else if (keycode == 123)
-		move_xoff(new, -0.1);
+		move_xoff(new, -0.025);
 	else if (keycode == 124)
-		move_xoff(new, 0.1);
+		move_xoff(new, 0.025);
 	else if (keycode == 126)
-		move_yoff(new, -0.1);
+		move_yoff(new, -0.025);
 	else if (keycode == 125)
-		move_yoff(new, 0.1);
+		move_yoff(new, 0.025);
 	else if (keycode == 69)
-		change_depth(new, 2);
+		change_depth(new, 10);
 	else if (keycode == 78)
-		change_depth(new, -2);
+		change_depth(new, -10);
 	else if (new)
 	{
 		ft_putnbr(keycode);
@@ -219,32 +225,20 @@ int		my_key_press(int keycode, t_mlx *new)
 	return (0);
 }
 
-void	run_win(t_mlx *new, int check)
+void	run_win(t_mlx *new, char *check)
 {
 	new->mlx = mlx_init();
 	new->win = mlx_new_window(new->mlx, W_WIDTH, W_HEIGHT, "42");
 	new->img = mlx_new_image(new->mlx, W_WIDTH, W_HEIGHT);
-	new->scale = 1;
-	new->depth = 300;
-	if (check == 1)
-		run_man(new);
-	else if (check == 2)
-		run_jul(new, 1, 0);
+	new->env.scale = 1;
+	new->env.x_lock = W_XORIGIN;
+	new->env.y_lock = W_YORIGIN;
+	new->env.depth = 300;
+	new->env.check = check;
+	check_param(new);
 	mlx_mouse_hook(new->win, my_mouse_func, new);
 	mlx_hook(new->win, 2, 0, my_key_press, new);
 	mlx_loop(new->mlx);
-}
-
-void	check_param(t_mlx *new, char *str)
-{
-	if (!strncmp(str, "man", 3))
-		run_win(new, 1);
-	else if (!strncmp(str, "jul", 3))
-		run_win(new, 2);
-	// else if (!strncmp(str, "apo", 3))
-	//
-	else
-		error();
 }
 
 int		main(int argc, char **argv)
@@ -259,6 +253,6 @@ int		main(int argc, char **argv)
 	if (argc < 2 || argc > 5)
 		return ((int)error());
 	while (i++ < argc)
-		check_param(new, argv[i]);
+		run_win(new, argv[i]);
 	return (1);
 }
