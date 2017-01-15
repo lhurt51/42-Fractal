@@ -38,12 +38,15 @@ NAME =		fractal
 
 SRCS =		$(LIBFT)/libft.a \
 			main.c	\
+			color_maps.c \
+
+THREAD =	-lpthread
 
 all: 	$(NAME)
 
 $(NAME):
 		@$(COMP)
-		@$(CC) $(INC) $(LIB) $(LX) $(OPENGL) $(APPKIT) $(FLAG) $(NAME) $(SRCS)
+		@$(CC) $(INC) $(LIB) $(LX) $(OPENGL) $(APPKIT) $(FLAG) $(NAME) $(SRCS) $(THREAD)
 		@echo "$(NAME) & $(LIBFT).a: has been created."
 
 clean:
