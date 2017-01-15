@@ -48,18 +48,20 @@ void	man_depth(int *i, double c_re, double c_im, int max)
 
 void	mandelbrot(t_mlx *new, int max)
 {
+	int		*tmp;
 	int		row;
 	int		col;
 	int		i;
 
 	row = 0;
+	tmp = return_map(new->env.color);
 	while (row < W_HEIGHT) {
 		col = 0;
     	while (col < W_WIDTH) {
 			man_depth(&i, (col - W_WIDTH / 2.0) * 4.0 / W_WIDTH * new->env.scale + new->env.x_offset,
 				(row - W_HEIGHT / 2.0) * 4.0 / W_WIDTH * new->env.scale + new->env.y_offset, max);
 	        if (i < max)
-				pixel_to_img(new, col, row, rainbow[i % 64]);
+				pixel_to_img(new, col, row, tmp[i % 64]);
 	        else
 				pixel_to_img(new, col, row, 0x000000);
 			col++;
@@ -94,11 +96,13 @@ int		julia_depth(t_mlx *new, int x, int y, int col, int row)
 
 void	julia_set(t_mlx *new, int x, int y)
 {
+	int	*tmp;
 	int	i;
 	int	row;
 	int	col;
 
 	row = 0;
+	tmp = return_map(new->env.color);
 	while (row < W_HEIGHT)
 	{
 		col = 0;
@@ -106,7 +110,7 @@ void	julia_set(t_mlx *new, int x, int y)
 		{
 			i = julia_depth(new, x, y, col, row);
 			if (i < new->env.depth)
-				  pixel_to_img(new, col, row, rainbow[i % 64]);
+				  pixel_to_img(new, col, row, tmp[i % 64]);
 			else
 				  pixel_to_img(new, col, row, 0x000000);
 			col++;
@@ -194,6 +198,16 @@ void 	move_yoff(t_mlx *new, double x)
 	check_param(new);
 }
 
+void	change_color(t_mlx *new, int i)
+{
+	new->env.color += i;
+	if (new->env.color > 11)
+		new->env.color = 0;
+	else if (new->env.color < 0)
+		new->env.color = 11;
+	check_param(new);
+}
+
 void	change_depth(t_mlx *new, int x)
 {
 	if (new->env.depth + x > 0)
@@ -217,6 +231,10 @@ int		my_key_press(int keycode, t_mlx *new)
 		change_depth(new, 10);
 	else if (keycode == 78)
 		change_depth(new, -10);
+	else if (keycode == 47)
+		change_color(new, 1);
+	else if (keycode == 43)
+		change_color(new, -1);
 	else if (new)
 	{
 		ft_putnbr(keycode);
@@ -231,8 +249,8 @@ void	run_win(t_mlx *new, char *check)
 	new->win = mlx_new_window(new->mlx, W_WIDTH, W_HEIGHT, "42");
 	new->img = mlx_new_image(new->mlx, W_WIDTH, W_HEIGHT);
 	new->env.scale = 1;
-	new->env.x_lock = W_XORIGIN;
-	new->env.y_lock = W_YORIGIN;
+	new->env.x_lock = 425;
+	new->env.y_lock = 600;
 	new->env.depth = 300;
 	new->env.check = check;
 	check_param(new);

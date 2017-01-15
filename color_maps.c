@@ -286,3 +286,31 @@ int		*map_fire(void)
 
 	return (fire);
 }
+
+int		*return_map(int i)
+{
+	if (i == 1)
+		return (map_dawninv());
+	else if (i == 2)
+		return (map_dusk());
+	else if (i == 3)
+		return (map_seashores());
+	else if (i == 4)
+		return (map_seashoresinv());
+	else if (i == 5)
+		return (map_redblue());
+	else if (i == 6)
+		return (map_rainbow());
+	else if (i == 7)
+		return (map_kryptonite());
+	else if (i == 8)
+		return (map_kryptoniteinv());
+	else if (i == 9)
+		return (map_ice());
+	else if (i == 10)
+		return (map_fire());
+	else if (i == 11)
+		return (map_fireinv());
+	else
+		return (map_dawn());
+}
