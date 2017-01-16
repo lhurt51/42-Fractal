@@ -46,20 +46,25 @@ void	man_depth(int *i, double c_re, double c_im, int max)
 	}
 }
 
-void	mandelbrot(t_mlx *new, int max)
+void	mandelbrot(t_mlx *new, int max, t_point quad)
 {
 	int		*tmp;
 	int		row;
 	int		col;
 	int		i;
+	int		tmpc;
 
-	row = 0;
+	ft_putendl("RUNNING...");
+	row = (quad.y == 1) ? 540 : 0;
+	tmpc = (quad.x == 1) ? 960 : 0;
 	tmp = return_map(new->env.color);
-	while (row < W_HEIGHT) {
-		col = 0;
-    	while (col < W_WIDTH) {
-			man_depth(&i, (col - W_WIDTH / 2.0) * 4.0 / W_WIDTH * new->env.scale + new->env.x_offset,
-				(row - W_HEIGHT / 2.0) * 4.0 / W_WIDTH * new->env.scale + new->env.y_offset, max);
+	while (row < W_HEIGHT / quad.y)
+	{
+		col = tmpc;
+		while (col < W_WIDTH / quad.x)
+		{
+			man_depth(&i, (col - W_WIDTH / 2.0) * 4.0 / W_WIDTH * new->env.scale + new->env.offset.x,
+				(row - W_HEIGHT / 2.0) * 4.0 / W_WIDTH * new->env.scale + new->env.offset.y, max);
 	        if (i < max)
 				pixel_to_img(new, col, row, tmp[i % 64]);
 	        else
@@ -78,8 +83,8 @@ int		julia_depth(t_mlx *new, int x, int y, int col, int row)
 
 	cRe = new_x(x);
 	cIm = new_y(y);
-	newRe = (col - W_WIDTH / 2.0) * 4.0 / W_WIDTH * new->env.scale + new->env.x_offset;
-	newIm = (row - W_HEIGHT / 2.0) * 4.0 / W_WIDTH * new->env.scale + new->env.y_offset;
+	newRe = (col - W_WIDTH / 2.0) * 4.0 / W_WIDTH * new->env.scale + new->env.offset.x;
+	newIm = (row - W_HEIGHT / 2.0) * 4.0 / W_WIDTH * new->env.scale + new->env.offset.y;
 	i = 0;
 	while(i < new->env.depth)
 	{
@@ -94,19 +99,21 @@ int		julia_depth(t_mlx *new, int x, int y, int col, int row)
 	return (i);
 }
 
-void	julia_set(t_mlx *new, int x, int y)
+void	julia_set(t_mlx *new, int x, int y, t_point quad)
 {
-	int	*tmp;
-	int	i;
-	int	row;
-	int	col;
+	int		*tmp;
+	int		i;
+	int		row;
+	int		col;
+	int		tmpc;
 
-	row = 0;
+	row = (quad.y == 1) ? 540 : 0;
+	tmpc = (quad.x == 1) ? 960 : 0;
 	tmp = return_map(new->env.color);
-	while (row < W_HEIGHT)
+	while (row < W_HEIGHT / quad.y)
 	{
-		col = 0;
-		while (col < W_WIDTH)
+		col = tmpc;
+		while (col < W_WIDTH / quad.x)
 		{
 			i = julia_depth(new, x, y, col, row);
 			if (i < new->env.depth)
@@ -119,34 +126,93 @@ void	julia_set(t_mlx *new, int x, int y)
 	}
 }
 
-void	run_man(t_mlx *new)
+void	get_quad(int i, t_point *tmp)
 {
-	mlx_destroy_image(new->mlx, new->img);
-	new->img = mlx_new_image(new->mlx, W_WIDTH, W_HEIGHT);
-	new->data = mlx_get_data_addr(new->img, &new->bits, &new->size_line, &new->endian);
-	mandelbrot(new, new->env.depth);
-	mlx_put_image_to_window(new->mlx, new->win, new->img, 0, 0);
+	if (i == 1)
+	{
+		tmp->x = 2;
+		tmp->y = 2;
+	}
+	else if(i == 2)
+	{
+		tmp->x = 1;
+		tmp->y = 2;
+	}
+	else if(i == 3)
+	{
+		tmp->x = 2;
+		tmp->y = 1;
+	}
+	else if (i == 4)
+	{
+		tmp->x = 1;
+		tmp->y = 1;
+	}
 }
 
-void	run_jul(t_mlx *new, int x, int y)
+void	*thread_man(void *arg)
 {
-	mlx_destroy_image(new->mlx, new->img);
-	new->img = mlx_new_image(new->mlx, W_WIDTH, W_HEIGHT);
-	new->data = mlx_get_data_addr(new->img, &new->bits, &new->size_line, &new->endian);
-	julia_set(new, x, y);
-	mlx_put_image_to_window(new->mlx, new->win, new->img, 0, 0);
+	static int i = 0;
+	t_mlx *new;
+	t_point tmp;
+
+	if (i >= 4)
+		i = 0;
+	get_quad(++i, &tmp);
+	new = (t_mlx*)arg;
+	mandelbrot(new, new->env.depth, tmp);
+	return (NULL);
 }
 
-void	check_param(t_mlx *new)
+void	*thread_jul(void *arg)
+{
+	static unsigned int i = 0;
+	t_mlx *new;
+	t_point tmp;
+
+	if (i >= 4)
+		i = 0;
+	get_quad(++i, &tmp);
+	new = (t_mlx*)arg;
+	julia_set(new, new->env.lock.x, new->env.lock.y, tmp);
+	return (NULL);
+}
+
+void	*check_param(t_mlx *new)
 {
 	if (!strncmp(new->env.check, "man", 3))
-		run_man(new);
+		return (&thread_man);
 	else if (!strncmp(new->env.check, "jul", 3))
-		run_jul(new, new->env.x_lock, new->env.y_lock);
+		return (&thread_jul);
 	// else if (!strncmp(str, "apo", 3))
 	//
 	else
-		error();
+		return(error());
+}
+
+void 	make_threads(t_mlx *new)
+{
+	pthread_t	pth[4];
+	int			i;
+
+	i = 0;
+	while (i++ < 4)
+	{
+		pthread_create(&pth[i - 1], NULL, check_param(new), new);
+		usleep(1);
+	}
+	i = 0;
+	while (i++ < 4)
+		pthread_join(pth[i - 1], NULL);
+}
+
+void	run_img(t_mlx *new)
+{
+	mlx_destroy_image(new->mlx, new->img);
+	new->img = mlx_new_image(new->mlx, W_WIDTH, W_HEIGHT);
+	new->data = mlx_get_data_addr(new->img, &new->bits, &new->size_line, &new->endian);
+	make_threads(new);
+	mlx_put_image_to_window(new->mlx, new->win, new->img, 0, 0);
 }
 
 void	zoom(t_mlx *new, int x, int y, int check)
@@ -154,25 +220,25 @@ void	zoom(t_mlx *new, int x, int y, int check)
 	if (check > 0)
 	{
 		new->env.scale *= .92;
-		new->env.x_offset += (x - W_XORIGIN) / (W_XORIGIN / new->env.scale) / 2.5;
-		new->env.y_offset += (y - W_YORIGIN) / (W_YORIGIN / new->env.scale) / 2.5;
+		new->env.offset.x += (x - W_XORIGIN) / (W_XORIGIN / new->env.scale) / 2.5;
+		new->env.offset.y += (y - W_YORIGIN) / (W_YORIGIN / new->env.scale) / 2.5;
 	}
 	else
 	{
 		new->env.scale /= .92;
-		new->env.x_offset -= (x - W_XORIGIN) / (W_XORIGIN / new->env.scale) / 2.5;
-		new->env.y_offset -= (y - W_YORIGIN) / (W_YORIGIN / new->env.scale) / 2.5;
+		new->env.offset.x -= (x - W_XORIGIN) / (W_XORIGIN / new->env.scale) / 2.5;
+		new->env.offset.y -= (y - W_YORIGIN) / (W_YORIGIN / new->env.scale) / 2.5;
 	}
-	check_param(new);
+	run_img(new);
 }
 
 int		my_mouse_func(int keycode, int x, int y, t_mlx *new)
 {
 	if (keycode == 1)
 	{
-		new->env.x_lock = x;
-		new->env.y_lock = y;
-		check_param(new);
+		new->env.lock.x = x;
+		new->env.lock.y = y;
+		run_img(new);
 	}
 	else if (keycode == 5)
 		zoom(new, x, y, 1);
@@ -188,14 +254,14 @@ int		my_mouse_func(int keycode, int x, int y, t_mlx *new)
 
 void 	move_xoff(t_mlx *new, double x)
 {
-	new->env.x_offset += x;
-	check_param(new);
+	new->env.offset.x += x;
+	run_img(new);
 }
 
 void 	move_yoff(t_mlx *new, double x)
 {
-	new->env.y_offset += x;
-	check_param(new);
+	new->env.offset.y += x;
+	run_img(new);
 }
 
 void	change_color(t_mlx *new, int i)
@@ -205,14 +271,14 @@ void	change_color(t_mlx *new, int i)
 		new->env.color = 0;
 	else if (new->env.color < 0)
 		new->env.color = 11;
-	check_param(new);
+	run_img(new);
 }
 
 void	change_depth(t_mlx *new, int x)
 {
-	if (new->env.depth + x > 0)
+	if (new->env.depth + x > 0 && new->env.depth + x < 500)
 		new->env.depth += x;
-	check_param(new);
+	run_img(new);
 }
 
 int		my_key_press(int keycode, t_mlx *new)
@@ -249,11 +315,11 @@ void	run_win(t_mlx *new, char *check)
 	new->win = mlx_new_window(new->mlx, W_WIDTH, W_HEIGHT, "42");
 	new->img = mlx_new_image(new->mlx, W_WIDTH, W_HEIGHT);
 	new->env.scale = 1;
-	new->env.x_lock = 425;
-	new->env.y_lock = 600;
+	new->env.lock.x = 425;
+	new->env.lock.y = 600;
 	new->env.depth = 300;
 	new->env.check = check;
-	check_param(new);
+	run_img(new);
 	mlx_mouse_hook(new->win, my_mouse_func, new);
 	mlx_hook(new->win, 2, 0, my_key_press, new);
 	mlx_loop(new->mlx);
