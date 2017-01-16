@@ -40,11 +40,9 @@ typedef struct		s_env
 {
 	char			*check;
 	double			scale;
-	double			x_offset;
-	double			y_offset;
+	t_point			offset;
+	t_point			lock;
 	int				depth;
-	int				x_lock;
-	int				y_lock;
 	int				color;
 }					t_env;
 
