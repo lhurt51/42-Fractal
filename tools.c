@@ -32,7 +32,7 @@ void	pixel_to_img(t_mlx *new, int x, int y, int color)
 void	reset_struct(t_mlx *new)
 {
 	new->env.scale = 1;
-	new->env.color = 0;
+	new->env.color = 6;
 	new->env.color_type = 1;
 	new->env.offset.x = 0;
 	new->env.offset.y = 0;
