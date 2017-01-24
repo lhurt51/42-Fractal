@@ -27,10 +27,10 @@ void	draw_y(t_mlx *lst, t_point *point1, t_point *point2, t_line *new)
 		new->inc = 1;
 	else
 		new->inc = -1;
-	while (y < (int)point2->y)
+	while (y++ < (int)point2->y)
 	{
-		if ((x < W_WIDTH && x > 0) && (y < W_HEIGHT && y > 0))
-			pixel_to_img(lst, x, y, tmp[RANGE(y, 0, 64, 0, W_HEIGHT)]);
+		if ((x < W_WIDTH && x > 0) && (y - 1 < W_HEIGHT && y - 1 > 0))
+			pixel_to_img(lst, x, y - 1, tmp[y % 64]);
 		if (p < 0)
 			p += 2 * new->xans;
 		else
@@ -38,7 +38,6 @@ void	draw_y(t_mlx *lst, t_point *point1, t_point *point2, t_line *new)
 			x += new->inc;
 			p += 2 * (new->xans - new->yans);
 		}
-		y++;
 	}
 }
 
@@ -57,10 +56,10 @@ void	draw_x(t_mlx *lst, t_point *point1, t_point *point2, t_line *new)
 		new->inc = 1;
 	else
 		new->inc = -1;
-	while (x < (int)point2->x)
+	while (x++ < (int)point2->x)
 	{
-		if ((x < W_WIDTH && x > 0) && (y < W_HEIGHT && y > 0))
-			pixel_to_img(lst, x, y, tmp[RANGE(y, 0, 64, 0, W_HEIGHT)]);
+		if ((x - 1 < W_WIDTH && x - 1 > 0) && (y < W_HEIGHT && y > 0))
+			pixel_to_img(lst, x - 1, y, tmp[y % 64]);
 		if (p < 0)
 			p += 2 * new->yans;
 		else
@@ -68,7 +67,6 @@ void	draw_x(t_mlx *lst, t_point *point1, t_point *point2, t_line *new)
 			y += new->inc;
 			p += 2 * (new->yans - new->xans);
 		}
-		x++;
 	}
 }
 

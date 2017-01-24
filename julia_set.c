@@ -12,25 +12,27 @@
 
 #include "fractal.h"
 
-int		julia_depth(t_mlx *new, int x, int y, int col, int row)
+int		julia_depth(t_mlx *new, t_point tmp, int col, int row)
 {
-	double	newRe, newIm, oldRe, oldIm;
-	double	cRe, cIm;
+	double	new_re;
+	double	new_im;
+	double	old_re;
+	double	old_im;
 	int		i;
 
-	cRe = NEW_X(x);
-	cIm = NEW_Y(y);
-	newRe = (col - W_WIDTH / 2.0) * 4.0 / W_WIDTH * new->env.scale + new->env.offset.x;
-	newIm = (row - W_HEIGHT / 2.0) * 4.0 / W_WIDTH * new->env.scale + new->env.offset.y;
+	new_re = (col - W_WIDTH / 2.0) * 4.0 / W_WIDTH * new->env.scale +
+		new->env.offset.x;
+	new_im = (row - W_HEIGHT / 2.0) * 4.0 / W_WIDTH * new->env.scale +
+		new->env.offset.y;
 	i = 0;
-	while(i < new->env.depth)
+	while (i < new->env.depth)
 	{
-		oldRe = newRe;
-		oldIm = newIm;
-		newRe = oldRe * oldRe - oldIm * oldIm + cRe;
-		newIm = 2 * oldRe * oldIm + cIm;
-		if((newRe * newRe + newIm * newIm) > 4)
-			break;
+		old_re = new_re;
+		old_im = new_im;
+		new_re = old_re * old_re - old_im * old_im + tmp.x;
+		new_im = 2 * old_re * old_im + tmp.y;
+		if ((new_re * new_re + new_im * new_im) > 4)
+			break ;
 		i++;
 	}
 	return (i);
@@ -38,25 +40,27 @@ int		julia_depth(t_mlx *new, int x, int y, int col, int row)
 
 void	julia_set(t_mlx *new, int x, int y, t_point quad)
 {
-	int		*tmp;
-	int		i;
-	int		row;
-	int		col;
-	int		tmpc;
+	t_point		point;
+	int			*tmp;
+	int			i;
+	int			row;
+	int			col;
 
 	row = (quad.y == 1) ? 540 : 0;
-	tmpc = (quad.x == 1) ? 960 : 0;
 	tmp = return_map(new->env.color);
 	while (row < W_HEIGHT / quad.y)
 	{
-		col = tmpc;
+		col = (quad.x == 1) ? 960 : 0;
 		while (col < W_WIDTH / quad.x)
 		{
-			i = julia_depth(new, x, y, col, row);
-			if (i < new->env.depth)
-				  pixel_to_img(new, col, row, tmp[RANGE(i, 0, 64, 0, new->env.depth)]);
+			point.x = NEW_X(x);
+			point.y = NEW_Y(y);
+			if ((i = julia_depth(new, point, col, row)) < new->env.depth)
+				pixel_to_img(new, col, row,
+					tmp[get_color_type(new, i % 64,
+						RANGE(i, 0, 64, 0, new->env.depth))]);
 			else
-				  pixel_to_img(new, col, row, 0x000000);
+				pixel_to_img(new, col, row, 0x000000);
 			col++;
 		}
 		row++;
@@ -65,9 +69,9 @@ void	julia_set(t_mlx *new, int x, int y, t_point quad)
 
 void	*thread_jul(void *arg)
 {
-	static unsigned int i = 1;
-	t_mlx *new;
-	t_point tmp;
+	static unsigned int	i = 1;
+	t_mlx				*new;
+	t_point				tmp;
 
 	if (i > THREADS)
 		i = 1;

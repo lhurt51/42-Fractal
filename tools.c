@@ -12,7 +12,7 @@
 
 #include "fractal.h"
 
-void			*error(void)
+void	*error(void)
 {
 	ft_putendl("Error: invalid amount of parameters");
 	ft_putendl("Usage: valid parameters man, jul, tree");
@@ -33,6 +33,7 @@ void	reset_struct(t_mlx *new)
 {
 	new->env.scale = 1;
 	new->env.color = 0;
+	new->env.color_type = 1;
 	new->env.offset.x = 0;
 	new->env.offset.y = 0;
 	new->env.lock.x = 425;
@@ -49,12 +50,12 @@ void	get_quad(int i, t_point *tmp)
 		tmp->x = 2;
 		tmp->y = 2;
 	}
-	else if(i == 2)
+	else if (i == 2)
 	{
 		tmp->x = 1;
 		tmp->y = 2;
 	}
-	else if(i == 3)
+	else if (i == 3)
 	{
 		tmp->x = 2;
 		tmp->y = 1;
@@ -64,4 +65,12 @@ void	get_quad(int i, t_point *tmp)
 		tmp->x = 1;
 		tmp->y = 1;
 	}
+}
+
+int		get_color_type(t_mlx *new, int ans1, int ans2)
+{
+	if (new->env.color_type == 0)
+		return (ans1);
+	else
+		return (ans2);
 }

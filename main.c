@@ -19,10 +19,10 @@ void	*check_param(t_mlx *new)
 	else if (!strncmp(new->env.check, "jul", 3))
 		return (&thread_jul);
 	else
-		return(error());
+		return (error());
 }
 
-void 	make_threads(t_mlx *new)
+void	make_threads(t_mlx *new)
 {
 	pthread_t	pth[THREADS];
 	int			i;
@@ -42,7 +42,8 @@ void	run_img(t_mlx *new)
 {
 	mlx_destroy_image(new->mlx, new->img);
 	new->img = mlx_new_image(new->mlx, W_WIDTH, W_HEIGHT);
-	new->data = mlx_get_data_addr(new->img, &new->bits, &new->size_line, &new->endian);
+	new->data = mlx_get_data_addr(new->img, &new->bits, &new->size_line,
+		&new->endian);
 	if (!strncmp(new->env.check, "tree", 4))
 		run_tree(new);
 	else if (check_param(new) != NULL)

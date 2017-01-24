@@ -31,7 +31,7 @@
 # define W_YORIGIN W_HEIGHT / 2
 # define NEW_X(i) ((i) * 4.0 / W_WIDTH - 2)
 # define NEW_Y(j) ((j) * 4.0 / W_HEIGHT - 2)
-# define RANGE(x, a, b, min, max) (((b) - (a)) * ((x) - (min)) / ((max) - (min))) + (a)
+# define RANGE(x, a, b, mn, mx) (((b)-(a)) * ((x)-(mn)) / ((mx)-(mn))) + (a)
 
 typedef struct		s_point
 {
@@ -56,6 +56,7 @@ typedef struct		s_env
 	t_point			lock;
 	int				depth;
 	int				color;
+	int				color_type;
 	int				lockup;
 }					t_env;
 
@@ -72,7 +73,10 @@ typedef struct		s_mlx
 }					t_mlx;
 
 void				*error(void);
+int					*extra_maps(int i);
+int					*extra_maps1(int i);
 int					*return_map(int i);
+int					get_color_type(t_mlx *new, int ans1, int answ2);
 void				reset_struct(t_mlx *new);
 void				pixel_to_img(t_mlx *new, int x, int y, int color);
 void				get_da(t_mlx *lst, t_point *point1, t_point *point2);
@@ -81,6 +85,8 @@ void				*thread_man(void *arg);
 void				*thread_jul(void *arg);
 void				run_tree(t_mlx *new);
 void				run_img(t_mlx *new);
+int					my_extra_key(int keycode, t_mlx *new);
+int					my_extra_key1(int keycode, t_mlx *new);
 int					my_key_press(int keycode, t_mlx *new);
 int					my_mouse_movement(int x, int y, t_mlx *new);
 int					my_mouse_func(int keycode, int x, int y, t_mlx *new);
