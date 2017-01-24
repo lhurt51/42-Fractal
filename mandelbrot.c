@@ -21,7 +21,8 @@ void	man_depth(int *i, double c_re, double c_im, int max)
 	x = 0;
 	y = 0;
 	*i = 0;
-	while (x * x + y * y <= 4 && *i < max) {
+	while (x * x + y * y <= 4 && *i < max)
+	{
 		x_new = x * x - y * y + c_re;
 		y = 2 * x * y + c_im;
 		x = x_new;
@@ -35,33 +36,34 @@ void	mandelbrot(t_mlx *new, int max, t_point quad)
 	int		row;
 	int		col;
 	int		i;
-	int		tmpc;
 
 	row = (quad.y == 1) ? 540 : 0;
-	tmpc = (quad.x == 1) ? 960 : 0;
 	tmp = return_map(new->env.color);
 	while (row < W_HEIGHT / quad.y)
 	{
-		col = tmpc;
+		col = (quad.x == 1) ? 960 : 0;
 		while (col < W_WIDTH / quad.x)
 		{
-			man_depth(&i, (col - W_WIDTH / 2.0) * 4.0 / W_WIDTH * new->env.scale + new->env.offset.x,
-				(row - W_HEIGHT / 2.0) * 4.0 / W_WIDTH * new->env.scale + new->env.offset.y, max);
-	        if (i < max)
-				pixel_to_img(new, col, row, tmp[RANGE(i, 0, 64, 0, new->env.depth)]);
-	        else
+			man_depth(&i, (col - W_WIDTH / 2.0) * 4.0 /
+				W_WIDTH * new->env.scale + new->env.offset.x,
+				(row - W_HEIGHT / 2.0) * 4.0 /
+				W_WIDTH * new->env.scale + new->env.offset.y, max);
+			if (i < max)
+				pixel_to_img(new, col, row, tmp[get_color_type(new, i % 64,
+					RANGE(i, 0, 64, 0, new->env.depth))]);
+			else
 				pixel_to_img(new, col, row, 0x000000);
 			col++;
-	    }
+		}
 		row++;
 	}
 }
 
 void	*thread_man(void *arg)
 {
-	static int i = 1;
-	t_mlx *new;
-	t_point tmp;
+	static int	i = 1;
+	t_mlx		*new;
+	t_point		tmp;
 
 	if (i > THREADS)
 		i = 1;

@@ -43,9 +43,13 @@ SRCS =		$(LIBFT)/libft.a \
 			fractal_tree.c \
 			mouse_hook_func.c \
 			key_hook_func.c \
+			key_hook_func1.c \
+			key_hook_func2.c \
 			tools.c \
 			line_algo.c \
 			color_maps.c \
+			color_maps1.c \
+			color_maps2.c \
 
 THREAD =	-lpthread
 
