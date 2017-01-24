@@ -38,6 +38,13 @@ NAME =		fractal
 
 SRCS =		$(LIBFT)/libft.a \
 			main.c	\
+			julia_set.c \
+			mandelbrot.c \
+			fractal_tree.c \
+			mouse_hook_func.c \
+			key_hook_func.c \
+			tools.c \
+			line_algo.c \
 			color_maps.c \
 
 THREAD =	-lpthread
