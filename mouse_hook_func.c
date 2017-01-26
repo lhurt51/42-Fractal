@@ -27,19 +27,19 @@ void	zoom(t_mlx *new, int x, int y, int check)
 {
 	if (check > 0)
 	{
+		new->env.offset.x += X_OFF(x, new->env.scale);
+		new->env.offset.y += Y_OFF(y, new->env.scale);
 		new->env.scale *= .92;
-		new->env.offset.x += (x - W_XORIGIN) / (W_XORIGIN /
-			new->env.scale) / 2.5;
-		new->env.offset.y += (y - W_YORIGIN) / (W_YORIGIN /
-			new->env.scale) / 2.5;
+		new->env.offset.x -= X_OFF(x, new->env.scale);
+		new->env.offset.y -= Y_OFF(y, new->env.scale);
 	}
 	else
 	{
+		new->env.offset.x -= X_OFF(x, new->env.scale);
+		new->env.offset.y -= Y_OFF(y, new->env.scale);
 		new->env.scale /= .92;
-		new->env.offset.x -= (x - W_XORIGIN) / (W_XORIGIN /
-			new->env.scale) / 2.5;
-		new->env.offset.y -= (y - W_YORIGIN) / (W_YORIGIN /
-			new->env.scale) / 2.5;
+		new->env.offset.x += X_OFF(x, new->env.scale);
+		new->env.offset.y += Y_OFF(y, new->env.scale);
 	}
 	run_img(new);
 }

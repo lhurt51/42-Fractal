@@ -20,10 +20,8 @@ int		julia_depth(t_mlx *new, t_point tmp, int col, int row)
 	double	old_im;
 	int		i;
 
-	new_re = (col - W_WIDTH / 2.0) * 4.0 / W_WIDTH * new->env.scale +
-		new->env.offset.x;
-	new_im = (row - W_HEIGHT / 2.0) * 4.0 / W_WIDTH * new->env.scale +
-		new->env.offset.y;
+	new_re = RE(col, new->env.scale, new->env.offset.x);
+	new_im = IM(row, new->env.scale, new->env.offset.y);
 	i = 0;
 	while (i < new->env.depth)
 	{
@@ -46,11 +44,11 @@ void	julia_set(t_mlx *new, int x, int y, t_point quad)
 	int			row;
 	int			col;
 
-	row = (quad.y == 1) ? 540 : 0;
+	row = (quad.y == 1) ? W_YORIGIN : 0;
 	tmp = return_map(new->env.color);
 	while (row < W_HEIGHT / quad.y)
 	{
-		col = (quad.x == 1) ? 960 : 0;
+		col = (quad.x == 1) ? W_XORIGIN : 0;
 		while (col < W_WIDTH / quad.x)
 		{
 			point.x = NEW_X(x);

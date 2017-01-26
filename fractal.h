@@ -13,9 +13,7 @@
 #ifndef FRACTAL_H
 # define FRACTAL_H
 
-# include <stdio.h>
 # include <pthread.h>
-
 # include <sys/types.h>
 # include <sys/stat.h>
 # include <fcntl.h>
@@ -25,13 +23,17 @@
 
 # define THREADS 4
 # define ZOOM_SPEED 2
-# define W_WIDTH 1920
-# define W_HEIGHT 1080
+# define W_WIDTH 1280
+# define W_HEIGHT 720
 # define W_XORIGIN W_WIDTH / 2
 # define W_YORIGIN W_HEIGHT / 2
 # define NEW_X(i) ((i) * 4.0 / W_WIDTH - 2)
 # define NEW_Y(j) ((j) * 4.0 / W_HEIGHT - 2)
 # define RANGE(x, a, b, mn, mx) (((b)-(a)) * ((x)-(mn)) / ((mx)-(mn))) + (a)
+# define X_OFF(x, scale) ((x-W_XORIGIN)/(W_XORIGIN/scale)*2)
+# define Y_OFF(y, scale) ((y-W_YORIGIN)/(W_YORIGIN/scale)*(2*W_HEIGHT/W_WIDTH))
+# define RE(col, scale, offset) ((col-W_WIDTH/2.0)*4.0/W_WIDTH*scale+offset)
+# define IM(row, scale, offset) (row-W_HEIGHT/2.0)*4.0/W_WIDTH*scale+offset
 
 typedef struct		s_point
 {
