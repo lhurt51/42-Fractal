@@ -30,8 +30,9 @@ void	make_threads(t_mlx *new)
 	i = 0;
 	while (i++ < THREADS)
 	{
+		usleep(1);
 		pthread_create(&pth[i - 1], NULL, check_param(new), new);
-		usleep(5);
+		usleep(1);
 	}
 	i = 0;
 	while (i++ < THREADS)

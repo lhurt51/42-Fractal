@@ -37,17 +37,15 @@ void	mandelbrot(t_mlx *new, int max, t_point quad)
 	int		col;
 	int		i;
 
-	row = (quad.y == 1) ? 540 : 0;
+	row = (quad.y == 1) ? W_YORIGIN : 0;
 	tmp = return_map(new->env.color);
 	while (row < W_HEIGHT / quad.y)
 	{
-		col = (quad.x == 1) ? 960 : 0;
+		col = (quad.x == 1) ? W_XORIGIN : 0;
 		while (col < W_WIDTH / quad.x)
 		{
-			man_depth(&i, (col - W_WIDTH / 2.0) * 4.0 /
-				W_WIDTH * new->env.scale + new->env.offset.x,
-				(row - W_HEIGHT / 2.0) * 4.0 /
-				W_WIDTH * new->env.scale + new->env.offset.y, max);
+			man_depth(&i, RE(col, new->env.scale, new->env.offset.x),
+				IM(row, new->env.scale, new->env.offset.y), max);
 			if (i < max)
 				pixel_to_img(new, col, row, tmp[get_color_type(new, i % 64,
 					RANGE(i, 0, 64, 0, new->env.depth))]);
